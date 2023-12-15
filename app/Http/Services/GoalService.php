@@ -64,14 +64,15 @@ class GoalService extends BaseService
     public function get(User $user, array $inputs): object
     {
         try {
-            $search = isset($inputs['search']) ? $inputs['search'] : null;
-            $type = isset($inputs['type']) ? $inputs['type'] : null;
-            $status = isset($inputs['status']) ? $inputs['status'] : 2;
-
             $statuses = config('goal.goalstatus');
             $types = config('goal.goaltypes');
 
+            $search = isset($inputs['search']) ? $inputs['search'] : null;
+            $type = isset($inputs['type']) ? $inputs['type'] : null;
+            $status = isset($inputs['status']) ? $inputs['status'] : $statuses['IN_PROGRESS'];
+
             $goals = $user->goals();
+
 
             if ($search) {
                 $goals->where('name', 'LIKE', '%' . $search . '%');
@@ -97,13 +98,13 @@ class GoalService extends BaseService
                 return $goal;
             });
 
-            if ($status === 0) {
+            if ($status === strval($statuses['NOT_STARTED'])) {
                 $goals = $goals->filter(function ($goal) {
                     return Carbon::today()->lt(Carbon::parse($goal->date_begin));
                 });
             }
 
-            if ($status === 1) {
+            if ($status === strval($statuses['IN_PROGRESS'])) {
                 $goals = $goals->filter(function ($goal) {
                     return Carbon::today()->gte(Carbon::parse($goal->date_begin))
                         && Carbon::today()->lte(Carbon::parse($goal->date_end))
@@ -111,13 +112,13 @@ class GoalService extends BaseService
                 });
             }
 
-            if ($status === 2) {
+            if ($status === strval($statuses['FINISH'])) {
                 $goals = $goals->filter(function ($goal) {
                     return $goal->amount <= $goal->total_contributions;
                 });
             }
 
-            if ($status === 3) {
+            if ($status === strval($statuses['NOT_COMPLETED'])) {
                 $goals = $goals->filter(function ($goal) {
                     return Carbon::today()->gt(Carbon::parse($goal->date_end))
                         && $goal->amount > $goal->total_contributions;
