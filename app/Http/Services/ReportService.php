@@ -16,11 +16,14 @@ class ReportService
     public function get(User $user, array $inputs): object
     {
         try {
+            $reportTypes = config('report.reporttypes');
+            $transactionTypes = config('report.transactiontypes');
+
             $month = isset($inputs['month']) ? $inputs['month'] : null;
             $year = isset($inputs['year']) ? $inputs['year'] : null;
             $wallet = isset($inputs['wallet']) ? $inputs['wallet'] : null;
-            $transactionType = isset($inputs['transaction_type']) ? $inputs['transaction_type'] : 'total';
-            $reportType = isset($inputs['report_type']) ? $inputs['report_type'] : 'expenses-incomes';
+            $transactionType = isset($inputs['transaction_type']) ? $inputs['transaction_type'] : $transactionTypes['TOTAL'];
+            $reportType = isset($inputs['report_type']) ? $inputs['report_type'] : $reportTypes['DAY_MONTH'];
 
             $categoryTypes = config('category.categorytypes');
 
@@ -49,7 +52,7 @@ class ReportService
                         $transactionMonth = $transactionDate->format('n');
 
                         // REPORTS BY REPORT TYPE: TOTAL EXPENSES/INCOMES
-                        if ($reportType == 'expenses-incomes') {
+                        if ($reportType == $reportTypes['DAY_MONTH']) {
                             if (! (bool) isset($transactionTotals[$transactionMonth][$category->type])) {
                                 $transactionTotals[$transactionMonth][$category->type] = 0;
                             }
@@ -57,7 +60,7 @@ class ReportService
                             $transactionTotals[$transactionMonth][$category->type] += $transaction->amount;
                         }
                         // // REPORTS BY REPORT TYPE: TOTAL AMOUNT PER CATEGORY
-                        elseif ($reportType == 'categories') {
+                        elseif ($reportType == $reportTypes['CATEGORY']) {
                             $categoriesTotals[$category->id] = $category;
                             if (! isset($categoriesTotals[$category->id][$category->type])) {
                                 $categoriesTotals[$category->id][$category->type] = 0;
@@ -82,13 +85,13 @@ class ReportService
                         $transactionDate = \DateTime::createFromFormat('Y-m-d', $transaction->date);
                         $day = $transactionDate->format('j');
 
-                        if ($reportType == 'expenses-incomes') {
+                        if ($reportType == $reportTypes['DAY_MONTH']) {
                             if (! (bool) isset($transactionTotals[$day][$category->type])) {
                                 $transactionTotals[$day][$category->type] = 0;
                             }
 
                             $transactionTotals[$day][$category->type] += $transaction->amount;
-                        } elseif ($reportType == 'categories') {
+                        } elseif ($reportType == $reportTypes['CATEGORY']) {
                             $categoriesTotals[$category->id] = $category;
                             if (! isset($categoriesTotals[$category->id][$category->type])) {
                                 $categoriesTotals[$category->id][$category->type] = 0;
@@ -101,10 +104,10 @@ class ReportService
             }
 
             // FILTER BY TRANSACTION TYPE: TOTAL/INCOMES/EXPENSES
-            if ($transactionType != 'total') {
+            if ($transactionType != $transactionTypes['TOTAL']) {
                 $filteredTotals = [];
 
-                if ($reportType == 'expenses-incomes') {
+                if ($reportType == $reportTypes['DAY_MONTH']) {
                     foreach ($transactionTotals as $item => $total) {
                         if (isset($total[$transactionType])) {
                             $filteredTotals[$item][$transactionType] = $total[$transactionType];
@@ -112,7 +115,7 @@ class ReportService
                     }
 
                     $transactionTotals = $filteredTotals;
-                } elseif ($reportType == 'categories') {
+                } elseif ($reportType == $reportTypes['CATEGORY']) {
 
                     foreach ($categoriesTotals as $item => $total) {
                         if (isset($total[$transactionType])) {
@@ -124,7 +127,7 @@ class ReportService
                     $categoriesTotals = $filteredTotals;
                 }
             } else {
-                if ($reportType == 'categories') {
+                if ($reportType == $reportTypes['CATEGORY']) {
                     foreach ($categoriesTotals as $item => $total) {
                         if (isset($total[$categoryTypes['EXPENSES']])) {
                             $categoriesTotals[$item]['amount'] = $total[$categoryTypes['EXPENSES']];
@@ -143,9 +146,9 @@ class ReportService
                 }
             }
 
-            if ($reportType == 'expenses-incomes') {
+            if ($reportType == $reportTypes['DAY_MONTH']) {
                 return new SuccessfulData('Get transactions successfully!', ['reports' => $transactionTotals]);
-            } elseif ($reportType == 'categories') {
+            } elseif ($reportType == $reportTypes['CATEGORY']) {
                 return new SuccessfulData('Get transactions successfully!', ['reports' => $categoriesTotals]);
             }
         } catch (Exception $error) {
