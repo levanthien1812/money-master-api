@@ -71,6 +71,8 @@ class CategoryPlanService extends BaseService
             $categoryId = isset($inputs['category_id']) ? $inputs['category_id'] : null;
             $withReport = isset($inputs['with_report']) ? $inputs['with_report'] : null;
 
+            $reportTypes = config('report.reporttypes');
+
             $plans = $user->category_plans()->where('month', $month)->where('year', $year)->where('wallet_id', $walletId)->with('category');
 
             if ($categoryId && $plans->count() > 0) {
@@ -92,7 +94,7 @@ class CategoryPlanService extends BaseService
 
                 if ($withReport) {
                     $report = app(ReportService::class)->get($user, [
-                        'year' => $year, 'month' => $month, 'wallet' => $walletId, 'report_type' => 'categories',
+                        'year' => $year, 'month' => $month, 'wallet' => $walletId, 'report_type' => $reportTypes['CATEGORY'],
                     ]);
 
                     $plans = $plans->map(function ($plan) use ($report) {
