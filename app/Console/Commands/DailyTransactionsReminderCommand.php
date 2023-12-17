@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Events\RemindAddTransactions;
 use App\Models\User;
 use App\Notifications\DailyTransactionReminder;
 use Illuminate\Console\Command;
@@ -32,7 +33,8 @@ class DailyTransactionsReminderCommand extends Command
         })->get();
 
         foreach ($users as $user) {
-            $user->notify(new DailyTransactionReminder());
+            $user->notify(new DailyTransactionReminder($user));
+            event(new RemindAddTransactions($user));
         }
     }
 }

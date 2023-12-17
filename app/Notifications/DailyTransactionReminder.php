@@ -2,9 +2,13 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Date;
 
 class DailyTransactionReminder extends Notification
 {
@@ -13,9 +17,9 @@ class DailyTransactionReminder extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct(private User $user)
     {
-        //
+        
     }
 
     /**
@@ -25,7 +29,7 @@ class DailyTransactionReminder extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -39,15 +43,19 @@ class DailyTransactionReminder extends Notification
             ->line('Thank you for using Money Master!');
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'date' => Carbon::now(),
+            'link' => env('APP_FE_URL').'/transactions',
+            'message' => 'Don\'t forget to add your transactions for today!'
         ];
+    }
+
+    public function toBroadcast(object $notifiable): BroadcastMessage {
+        return new BroadcastMessage([
+            'message' =>  'Don\'t forget to add your transactions for today!',
+            'link' => env('APP_FE_URL').'/transactions'
+        ]);
     }
 }
