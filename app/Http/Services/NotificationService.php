@@ -52,4 +52,19 @@ class NotificationService extends BaseService
             return new FailedData('Fail to mark all notifications as read', ['error' => $error]);
         }
     }
+
+    public function delete(User $user, string $notificationId): object
+    {
+        try {
+            $notifcation = $user->notifications()->find($notificationId);
+
+            if ($notifcation) {
+                $notifcation->delete();
+            }
+
+            return new SuccessfulData('Notification is deleted successfully!');
+        } catch (Exception $error) {
+            return new FailedData('Fail to delete notification', ['error' => $error]);
+        }
+    }
 }

@@ -34,4 +34,11 @@ class NotificationsController extends Controller
 
         return (new MyResponse($resultData))->get();
     }
+
+    public function delete(Request $request, string $id)
+    {
+        $resultData = $this->notificationService->delete($request->user(), $id);
+
+        return (new MyResponse($resultData))->get();
+    }
 }

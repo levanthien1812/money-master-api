@@ -124,9 +124,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/categories', [CategoriesController::class, 'create'])->name('create-category');
         Route::patch('/categories/{id}', [CategoriesController::class, 'update'])->name('update-category');
 
+        // Notifications
         Route::get('/notifications', [NotificationsController::class, 'get'])->name('get-notifications');
         Route::patch('/notifications/mark-as-read/{id}', [NotificationsController::class, 'markAsRead'])->name('mark-notification-read');
         Route::patch('/notifications/mark-all-as-read', [NotificationsController::class, 'markAllAsRead'])->name('mark-all-notifications-read');
+        Route::delete('/notifications/{id}', [NotificationsController::class, 'delete'])->name('delete-notification');
 
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     });
