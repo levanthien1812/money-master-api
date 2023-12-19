@@ -44,12 +44,14 @@ class ReportExport implements FromCollection, ShouldAutoSize, WithColumnWidths, 
         $typeColumn = 'E';
         $rowCount = $sheet->getHighestDataRow($typeColumn);
 
+        $categoryTypes = config('category.categorytypes');
+
         for ($row = 3; $row <= $rowCount; $row++) {
             $cellRange = $typeColumn.$row;
 
             $categoryCell = $sheet->getCell('F'.$row);
             $category = Category::where('name', $categoryCell->getValue())->first();
-            if ($category->type !== 'incomes') {
+            if ($category->type !== $categoryTypes['INCOMES']) {
                 $cellColor = 'F97315';
             } else {
                 $cellColor = '22C55D';

@@ -47,7 +47,7 @@ class DailyTransactionReminder extends Notification
     {
         return [
             'date' => Carbon::now(),
-            'link' => env('APP_FE_URL').'/transactions',
+            'link' => '/transactions',
             'message' => 'Don\'t forget to add your transactions for today!'
         ];
     }
@@ -55,7 +55,7 @@ class DailyTransactionReminder extends Notification
     public function toBroadcast(object $notifiable): BroadcastMessage {
         return new BroadcastMessage([
             'message' =>  'Don\'t forget to add your transactions for today!',
-            'link' => env('APP_FE_URL').'/transactions'
+            'link' => '/transactions'
         ]);
     }
 }
