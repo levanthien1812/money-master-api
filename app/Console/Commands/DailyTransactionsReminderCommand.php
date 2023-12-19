@@ -33,8 +33,10 @@ class DailyTransactionsReminderCommand extends Command
         })->get();
 
         foreach ($users as $user) {
-            $user->notify(new DailyTransactionReminder($user));
-            event(new RemindAddTransactions($user));
+            if ($user->hasRole('user')) {
+                $user->notify(new DailyTransactionReminder($user));
+                event(new RemindAddTransactions($user));
+            }
         }
     }
 }
