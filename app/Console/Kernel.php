@@ -12,7 +12,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->command('transactions:reminder')->dailyAt('20:46')->timezone('Asia/Ho_Chi_Minh'); // Adjust the time as per your needs.
+        $schedule->command('transactions:reminder')->dailyAt('22:15')->timezone('Asia/Ho_Chi_Minh'); // Adjust the time as per your needs.
     }
 
     /**

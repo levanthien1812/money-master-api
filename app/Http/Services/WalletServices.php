@@ -69,7 +69,9 @@ class WalletServices extends BaseService
             ->get()
             ->map(function ($wallet) {
                 return $wallet->transactions->sum(function ($transaction) {
-                    if ($transaction->category->type === 'incomes') {
+                    $categoryTypes = config('category.categorytypes');
+
+                    if ($transaction->category->type === $categoryTypes['INCOMES']) {
                         return $transaction->amount;
                     } else {
                         return -$transaction->amount;
@@ -88,7 +90,7 @@ class WalletServices extends BaseService
         try {
 
             $wallet = $this->getById($id);
-            if (! $wallet) {
+            if (!$wallet) {
                 return new FailedData('Wallet not found!');
             }
 
@@ -123,7 +125,7 @@ class WalletServices extends BaseService
         try {
             $wallet = $this->getById($id);
 
-            if (! $wallet) {
+            if (!$wallet) {
                 return new FailedData('Wallet not found!');
             }
 
