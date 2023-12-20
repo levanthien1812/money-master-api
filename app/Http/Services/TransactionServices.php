@@ -2,11 +2,15 @@
 
 namespace App\Http\Services;
 
+use App\Events\RemindOverspendCategoryPlan;
 use App\Http\Helpers\FailedData;
 use App\Http\Helpers\StorageHelper;
 use App\Http\Helpers\SuccessfulData;
+use App\Models\Event;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Notifications\OverspendCategoryPlan;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -14,19 +18,28 @@ use Illuminate\Support\Str;
 class TransactionServices extends BaseService
 {
     protected $categoryService;
-
     protected $walletService;
+    protected $categoryPlanService;
+    protected $reportService;
 
-    public function __construct(CategoryServices $categoryService, WalletServices $walletService)
-    {
+    public function __construct(
+        CategoryServices $categoryService,
+        WalletServices $walletService,
+        CategoryPlanService $categoryPlanService,
+        ReportService $reportService
+    ) {
         parent::__construct(Transaction::class);
         $this->categoryService = $categoryService;
         $this->walletService = $walletService;
+        $this->categoryPlanService = $categoryPlanService;
+        $this->reportService = $reportService;
     }
 
     public function create(User $user, array $data): object
     {
         try {
+            $reportTypes = config('report.reporttypes');
+
             if (!$this->categoryService->checkExistsById($data['category_id'])) {
                 return new FailedData('Category not found!');
             }
@@ -37,9 +50,9 @@ class TransactionServices extends BaseService
 
             $transactionData = array_merge($data, ['user_id' => $user->id]);
 
-            // CREATE CATEGORY FOR USER IF CATEGORY IS DEFAULT
             $category = $this->categoryService->getById($data['category_id']);
 
+            // CREATE CATEGORY FOR USER IF CATEGORY IS DEFAULT
             if ($category && $category->default == true) {
                 $newCategory = $this->categoryService->createBasedOnDefault($user->id, $category);
             }
@@ -56,6 +69,27 @@ class TransactionServices extends BaseService
             }
 
             $newTransaction = $this->model::create($transactionData);
+
+            $month = Carbon::parse($data['date'])->format('m');
+            $year = Carbon::parse($data['date'])->year;
+            $categoryPlan = $this->categoryPlanService->getByCategoryId($user->id, $category->id, $month, $year);
+
+            if ($categoryPlan) {
+                $report = $this->reportService->get($user, [
+                    'month' => $month,
+                    'year' => $year,
+                    'wallet' => $data['wallet_id'],
+                    'report_type' => $reportTypes['CATEGORY']
+                ]);
+
+                $currentAmount = $report->getData()['reports'][$categoryPlan->category_id . '']['amount'];
+
+                $currentPercent = $currentAmount / $categoryPlan->amount * 100;
+                if ($currentPercent >= 95 && $currentPercent <= 100) {
+                    $user->notify(new OverspendCategoryPlan($user, $categoryPlan, $currentAmount));
+                    event(new RemindOverspendCategoryPlan($user, $categoryPlan, $currentAmount));
+                }
+            }
 
             return new SuccessfulData('Create transaction successfully!', ['transaction' => $newTransaction]);
         } catch (Exception $error) {

@@ -25,11 +25,11 @@ class CategoryPlanService extends BaseService
     {
         try {
 
-            if (! $this->walletService->checkExistsById($data['wallet_id'])) {
+            if (!$this->walletService->checkExistsById($data['wallet_id'])) {
                 return new FailedData('Wallet not found!');
             }
 
-            if (! $this->categoryService->checkExistsById($data['category_id'])) {
+            if (!$this->categoryService->checkExistsById($data['category_id'])) {
                 return new FailedData('Category not found!');
             }
 
@@ -39,7 +39,7 @@ class CategoryPlanService extends BaseService
                 if ($category->default == 1) {
                     $userCategory = $this->categoryService->getWithSameNameOfUser($user->id, $category->id, $category->name);
 
-                    if (! $userCategory) {
+                    if (!$userCategory) {
                         $category = $this->categoryService->createBasedOnDefault($user->id, $category);
                         $data['category_id'] = $category->id;
                     } else {
@@ -99,8 +99,8 @@ class CategoryPlanService extends BaseService
 
                     $plans = $plans->map(function ($plan) use ($report) {
 
-                        if (isset($report->getData()['reports'][$plan->category_id.''])) {
-                            $plan = (object) array_merge($plan->toArray(), ['actual' => $report->getData()['reports'][$plan->category_id.'']['amount']]);
+                        if (isset($report->getData()['reports'][$plan->category_id . ''])) {
+                            $plan = (object) array_merge($plan->toArray(), ['actual' => $report->getData()['reports'][$plan->category_id . '']['amount']]);
                         } else {
                             $plan = (object) array_merge($plan->toArray(), ['actual' => 0]);
                         }
@@ -121,7 +121,7 @@ class CategoryPlanService extends BaseService
         try {
             $plan = $this->getById($id);
 
-            if (! $plan) {
+            if (!$plan) {
                 return new FailedData('Category plan not found!');
             }
 
@@ -129,7 +129,7 @@ class CategoryPlanService extends BaseService
 
             $updated = $plan->update($planData);
 
-            if (! $updated) {
+            if (!$updated) {
                 return new FailedData('Something went wrong when update category plan');
             }
 
@@ -143,7 +143,7 @@ class CategoryPlanService extends BaseService
     {
         try {
             $deleted = $this->model::destroy($id);
-            if (! $deleted) {
+            if (!$deleted) {
                 return new FailedData('Delete fails or plan not found!');
             }
 
@@ -151,6 +151,15 @@ class CategoryPlanService extends BaseService
         } catch (Exception $error) {
             return new FailedData('Failed to delete category plan!');
         }
+    }
+
+    public function getByCategoryId(int $userId, int $categoryId, int $month, int $year): CategoryPlan
+    {
+        return $this->model::where('user_id', $userId)
+            ->where('category_id', $categoryId)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->first();
     }
 
     public function deleteByCategoryid(int $categoryId): bool

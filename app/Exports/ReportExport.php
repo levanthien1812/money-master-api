@@ -28,9 +28,17 @@ class ReportExport implements FromCollection, ShouldAutoSize, WithColumnWidths, 
             ->where('transactions.user_id', $this->userId)
             ->join('categories', 'transactions.category_id', '=', 'categories.id')
             ->join('wallets', 'transactions.wallet_id', '=', 'wallets.id')
-            ->select('date', 'title', 'amount', 'description', 'categories.type', 'categories.name')
+            ->select('date', 'title', 'amount', 'description', 'categories.type as type', 'categories.name')
             ->orderBy('date', 'desc')
             ->get();
+
+        $data = $data->map(function ($item) {
+            $categoryTypes = config('category.categorytypes');
+
+            $item->type = ($item->type === $categoryTypes['INCOMES']) ? 'income' : 'expense';
+
+            return $item;
+        });
 
         return collect([$this->headings()])->concat($data);
     }
@@ -38,7 +46,7 @@ class ReportExport implements FromCollection, ShouldAutoSize, WithColumnWidths, 
     public function styles(Worksheet $sheet)
     {
         $sheet->mergeCells('A1:F1');
-        $sheet->setCellValue('A1', 'Transactions of month '.$this->month.'/'.$this->year);
+        $sheet->setCellValue('A1', 'Transactions of month ' . $this->month . '/' . $this->year);
         $sheet->getRowDimension(1)->setRowHeight(30);
 
         $typeColumn = 'E';
@@ -47,9 +55,9 @@ class ReportExport implements FromCollection, ShouldAutoSize, WithColumnWidths, 
         $categoryTypes = config('category.categorytypes');
 
         for ($row = 3; $row <= $rowCount; $row++) {
-            $cellRange = $typeColumn.$row;
+            $cellRange = $typeColumn . $row;
 
-            $categoryCell = $sheet->getCell('F'.$row);
+            $categoryCell = $sheet->getCell('F' . $row);
             $category = Category::where('name', $categoryCell->getValue())->first();
             if ($category->type !== $categoryTypes['INCOMES']) {
                 $cellColor = 'F97315';
