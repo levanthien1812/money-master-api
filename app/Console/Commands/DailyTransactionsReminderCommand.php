@@ -21,7 +21,7 @@ class DailyTransactionsReminderCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Reminder user to add transactions daily';
+    protected $description = 'Remind user to add transactions daily';
 
     /**
      * Execute the console command.
