@@ -13,13 +13,10 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class RemindOverspendCategoryPlan implements ShouldBroadcast
+class RemindOverspentCategoryPlan
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    /**
-     * Create a new event instance.
-     */
     public function __construct(
         private User $user,
         private CategoryPlan $categoryPlan,
@@ -42,17 +39,17 @@ class RemindOverspendCategoryPlan implements ShouldBroadcast
 
     public function broadcastAs(): string
     {
-        return 'remind-overspend-category-plan-event';
+        return 'remind-overspent-category-plan-event';
     }
 
     public function broadcastWith(): array
     {
         $monthName = Carbon::create(null, $this->categoryPlan->month, 1)->format('F');
-        $remaining = $this->categoryPlan->amount - $this->currentAmount;
+        $exceeding = $this->currentAmount - $this->categoryPlan->amount;
 
         return ([
             'link' => '/plans',
-            'message' =>  '[OVERSPEND REMINDER] ' . $monthName . " " . $this->categoryPlan->year . ": Only " . $remaining . " remaining for " . $this->categoryPlan->category->name . "!"
+            'message' =>  '[OVERSPENT REMINDER] ' . $monthName . " " . $this->categoryPlan->year . ": Exceed " . $exceeding . " for " . $this->categoryPlan->category->name . "!"
         ]);
     }
 }

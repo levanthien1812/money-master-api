@@ -13,7 +13,7 @@ use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class OverspendCategoryPlan extends Notification
+class OverspentCategoryPlan extends Notification
 {
     use Queueable;
 
@@ -28,9 +28,9 @@ class OverspendCategoryPlan extends Notification
         //
     }
 
-    private function getRemaining(): float
+    private function getExceeding(): float
     {
-        return $this->categoryPlan->amount - $this->currentAmount;
+        return $this->currentAmount - $this->categoryPlan->amount;
     }
 
     /**
@@ -49,23 +49,23 @@ class OverspendCategoryPlan extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $monthName = Carbon::create(null, $this->categoryPlan->month, 1)->format('F');
-        $remaining = $this->getRemaining();
-        
+        $exceeding = $this->getExceeding();
+
         return (new MailMessage)
-            ->line('[OVERSPEND REMINDER] ' . $monthName . " " . $this->categoryPlan->year . ": Only " . $remaining . " remaining for " . $this->categoryPlan->category->name . "!")
-            ->action('Overspend warning', url('/plans'))
+            ->line('[OVERSPENT REMINDER] ' . $monthName . " " . $this->categoryPlan->year . ": Exceed " . $exceeding . " for " . $this->categoryPlan->category->name . "!")
+            ->action('Overspent warning', url('/plans'))
             ->line('Thank you for using our application!');
     }
 
     public function toArray(object $notifiable): array
     {
         $monthName = Carbon::create(null, $this->categoryPlan->month, 1)->format('F');
-        $remaining = $this->getRemaining();
+        $exceeding = $this->getExceeding();
 
         return [
             'date' => Carbon::now(),
             'link' => '/plans',
-            'message' =>  '[OVERSPEND REMINDER] ' . $monthName . " " . $this->categoryPlan->year . ": Only " . $remaining . " remaining for " . $this->categoryPlan->category->name . "!"
+            'message' =>  '[OVERSPENT REMINDER] ' . $monthName . " " . $this->categoryPlan->year . ": Exceed " . $exceeding . " for " . $this->categoryPlan->category->name . "!"
         ];
     }
 }

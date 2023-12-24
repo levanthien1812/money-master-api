@@ -3,6 +3,7 @@
 namespace App\Http\Services;
 
 use App\Events\RemindOverspendCategoryPlan;
+use App\Events\RemindOverspentCategoryPlan;
 use App\Http\Helpers\FailedData;
 use App\Http\Helpers\StorageHelper;
 use App\Http\Helpers\SuccessfulData;
@@ -10,6 +11,7 @@ use App\Models\Event;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Notifications\OverspendCategoryPlan;
+use App\Notifications\OverspentCategoryPlan;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -88,6 +90,9 @@ class TransactionServices extends BaseService
                 if ($currentPercent >= 95 && $currentPercent <= 100) {
                     $user->notify(new OverspendCategoryPlan($user, $categoryPlan, $currentAmount));
                     event(new RemindOverspendCategoryPlan($user, $categoryPlan, $currentAmount));
+                } else if ($currentPercent > 100) {
+                    $user->notify(new OverspentCategoryPlan($user, $categoryPlan, $currentAmount));
+                    event(new RemindOverspentCategoryPlan($user, $categoryPlan, $currentAmount));
                 }
             }
 
