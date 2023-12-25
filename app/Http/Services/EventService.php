@@ -20,10 +20,13 @@ class EventService extends BaseService
     public function create(User $user, array $data): object
     {
         try {
-            $image = isset($data['image']) ? $data['image'] : null;
-            $imageUrl = StorageHelper::store($image, '/public/images/events');
+            $eventData = array_merge($data, ['user_id' => $user->id]);
 
-            $eventData = array_merge($data, ['user_id' => $user->id, 'image' => $imageUrl]);
+            $image = isset($data['image']) ? $data['image'] : null;
+            if ($image) {
+                $imageUrl = StorageHelper::store($image, '/public/images/events');
+                $eventData = array_merge($eventData, ['image' => $imageUrl]);
+            }
 
             $newEvent = Event::create($eventData);
 
