@@ -16,6 +16,7 @@ class Transaction extends Model
         'category_id',
         'wallet_id',
         'user_id',
+        'event_id',
         'date',
         'description',
         'image',
@@ -34,5 +35,10 @@ class Transaction extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class);
     }
 }

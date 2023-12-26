@@ -48,4 +48,10 @@ class EventsController extends Controller
 
         return (new MyResponse($resultData))->get();
     }
+
+    public function getTransactions(Request $request, int $id)
+    {
+        $resultData = $this->eventServices->getTransactions($id);
+        return (new MyResponse($resultData))->get();
+    }
 }

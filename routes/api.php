@@ -96,6 +96,7 @@ Route::prefix('v1')->group(function () {
                 ->name('delete-event-with-transactions');
             Route::delete('/events/{id}/without-transactions', [EventsController::class, 'deleteWithoutTransactions'])
                 ->name('delete-event-without-transactions');
+            Route::get('/events/{id}/transactions', [EventsController::class, 'getTransactions'])->name('get-transactions-by-event');
 
             // Users
             Route::delete('/users', [UserController::class, 'deleteUser'])->name('delete-user');
