@@ -7,6 +7,7 @@ use App\Http\Helpers\StorageHelper;
 use App\Http\Helpers\SuccessfulData;
 use App\Models\User;
 use App\Models\Event;
+use App\Models\Transaction;
 use Exception;
 use Illuminate\Support\Str;
 
@@ -158,5 +159,22 @@ class EventService extends BaseService
     public function getById(int $id): ?Event
     {
         return Event::find($id);
+    }
+
+    public function getTransactions(int $eventId): object
+    {
+        try {
+            $event = $this->getById($eventId);
+
+            if (!$event) {
+                return new FailedData('Event not found!');
+            }
+
+            return new SuccessfulData('Get transactions by event successfully!', ['transactions' => $event->transactions()->with(['category' => function ($query) {
+                return $query->select('image', 'name', 'id');
+            }])->get()]);
+        } catch (Exception $error) {
+            return new FailedData('Failed to get transactions by event!', ['error' => $error]);
+        }
     }
 }
