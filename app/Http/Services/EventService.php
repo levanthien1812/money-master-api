@@ -171,7 +171,7 @@ class EventService extends BaseService
             }
 
             return new SuccessfulData('Get transactions by event successfully!', ['transactions' => $event->transactions()->with(['category' => function ($query) {
-                return $query->select('image', 'name', 'id');
+                return $query->select('image', 'name', 'id', 'type');
             }])->get()]);
         } catch (Exception $error) {
             return new FailedData('Failed to get transactions by event!', ['error' => $error]);

@@ -153,7 +153,7 @@ class CategoryPlanService extends BaseService
         }
     }
 
-    public function getByCategoryId(int $userId, int $categoryId, int $month, int $year): CategoryPlan
+    public function getByCategoryId(int $userId, int $categoryId, int $month, int $year): ?CategoryPlan
     {
         return $this->model::where('user_id', $userId)
             ->where('category_id', $categoryId)
