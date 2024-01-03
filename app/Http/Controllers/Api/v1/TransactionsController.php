@@ -8,6 +8,7 @@ use App\Http\Requests\Transactions\CreateTransactionRequest;
 use App\Http\Requests\Transactions\UpdateTransactionRequest;
 use App\Http\Services\TransactionServices;
 use Illuminate\Http\Request;
+use OpenApi\Annotations\PathItem;
 
 class TransactionsController extends Controller
 {
@@ -15,6 +16,12 @@ class TransactionsController extends Controller
     {
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/v1/transactions",
+     *     @OA\Response(response="200", description="Create transaction")
+     * )
+     */
     public function create(CreateTransactionRequest $request)
     {
         $returnData = $this->transactionServices->create($request->user(), $request->all());

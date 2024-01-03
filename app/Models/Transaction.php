@@ -20,6 +20,7 @@ class Transaction extends Model
         'date',
         'description',
         'image',
+        'location'
     ];
 
     public function wallet(): BelongsTo

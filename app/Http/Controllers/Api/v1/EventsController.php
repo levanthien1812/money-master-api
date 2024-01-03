@@ -35,7 +35,7 @@ class EventsController extends Controller
         return (new MyResponse($resultData))->get();
     }
 
-    public function deleleWithTransactions(Request $request, int $id)
+    public function deleteWithTransactions(Request $request, int $id)
     {
         $resultData = $this->eventServices->deleteWithTransactions($id);
 
