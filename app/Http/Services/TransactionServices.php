@@ -145,7 +145,11 @@ class TransactionServices extends BaseService
                 $query->where('title', 'LIKE', '%' . ($search) . '%')->orWhere('description', 'LIKE', '%' . $search . '%');
             }
 
-            $transactions = $query->orderBy('date', 'desc')->with('category')->get();
+            $transactions = $query->orderBy('date', 'desc')->with(['category' =>  function ($query) {
+                return $query->select('id', 'name', 'image');
+            }])->with(['event' => function ($query) {
+                return $query->select('id', 'name');
+            }])->get();
 
             return new SuccessfulData('', ['transactions' => $transactions]);
         } catch (Exception $error) {
