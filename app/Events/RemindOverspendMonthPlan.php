@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\CategoryPlan;
+use App\Models\MonthPlan;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Broadcasting\Channel;
@@ -11,16 +11,18 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class RemindOverspentCategoryPlan implements ShouldBroadcast
+class RemindOverspendMonthPlan implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    /**
+     * Create a new event instance.
+     */
     public function __construct(
         private User $user,
-        private CategoryPlan $categoryPlan,
+        private MonthPlan $monthPlan,
         private float $currentAmount
     ) {
-        //
     }
 
     /**
@@ -37,17 +39,17 @@ class RemindOverspentCategoryPlan implements ShouldBroadcast
 
     public function broadcastAs(): string
     {
-        return 'remind-overspent-category-plan-event';
+        return 'remind-overspend-month-plan-event';
     }
 
     public function broadcastWith(): array
     {
-        $monthName = Carbon::create(null, $this->categoryPlan->month, 1)->format('F');
-        $exceeding = $this->currentAmount - $this->categoryPlan->amount;
+        $monthName = Carbon::create(null, $this->monthPlan->month, 1)->format('F');
+        $exceeding = $this->currentAmount - $this->monthPlan->amount;
 
         return ([
             'link' => '/plans',
-            'message' =>  '[OVERSPENT REMINDER] ' . $monthName . " " . $this->categoryPlan->year . ": Exceed " . $exceeding . " for " . $this->categoryPlan->category->name . "!"
+            'message' =>  '[OVERSPEND REMINDER] ' . $monthName . " " . $this->monthPlan->year . ": Only " . $exceeding . " remaining!"
         ]);
     }
 }

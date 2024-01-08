@@ -2,16 +2,12 @@
 
 namespace App\Http\Services;
 
-use App\Events\RemindOverspendCategoryPlan;
-use App\Events\RemindOverspentCategoryPlan;
 use App\Http\Helpers\FailedData;
 use App\Http\Helpers\StorageHelper;
 use App\Http\Helpers\SuccessfulData;
 use App\Models\Event;
 use App\Models\Transaction;
 use App\Models\User;
-use App\Notifications\OverspendCategoryPlan;
-use App\Notifications\OverspentCategoryPlan;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,25 +18,27 @@ class TransactionServices extends BaseService
     protected $categoryService;
     protected $walletService;
     protected $categoryPlanService;
+    protected $monthPlanService;
     protected $reportService;
 
     public function __construct(
         CategoryServices $categoryService,
         WalletServices $walletService,
         CategoryPlanService $categoryPlanService,
+        MonthPlanService $monthPlanService,
         ReportService $reportService
     ) {
         parent::__construct(Transaction::class);
         $this->categoryService = $categoryService;
         $this->walletService = $walletService;
         $this->categoryPlanService = $categoryPlanService;
+        $this->monthPlanService = $monthPlanService;
         $this->reportService = $reportService;
     }
 
     public function create(User $user, array $data): object
     {
         try {
-            $reportTypes = config('report.reporttypes');
 
             if (!$this->categoryService->checkExistsById($data['category_id'])) {
                 return new FailedData('Category not found!');
@@ -75,25 +73,14 @@ class TransactionServices extends BaseService
             $month = Carbon::parse($data['date'])->format('m');
             $year = Carbon::parse($data['date'])->year;
             $categoryPlan = $this->categoryPlanService->getByCategoryId($user->id, $category->id, $month, $year);
+            $monthPlan = $this->monthPlanService->getByMonthYear($user->id, $month, $year);
 
             if ($categoryPlan) {
-                $report = $this->reportService->get($user, [
-                    'month' => $month,
-                    'year' => $year,
-                    'wallet' => $data['wallet_id'],
-                    'report_type' => $reportTypes['CATEGORY']
-                ]);
+                app(NotificationService::class)->notifyOverspendCategoryPlan($user, $categoryPlan, $month, $year, $data['wallet_id']);
+            }
 
-                $currentAmount = $report->getData()['reports'][$categoryPlan->category_id . '']['amount'];
-
-                $currentPercent = $currentAmount / $categoryPlan->amount * 100;
-                if ($currentPercent >= 95 && $currentPercent <= 100) {
-                    $user->notify(new OverspendCategoryPlan($user, $categoryPlan, $currentAmount));
-                    event(new RemindOverspendCategoryPlan($user, $categoryPlan, $currentAmount));
-                } else if ($currentPercent > 100) {
-                    $user->notify(new OverspentCategoryPlan($user, $categoryPlan, $currentAmount));
-                    event(new RemindOverspentCategoryPlan($user, $categoryPlan, $currentAmount));
-                }
+            if ($monthPlan) {
+                app(NotificationService::class)->notifyOverspendMonthPlan($user, $monthPlan, $month, $year, $data['wallet_id']);
             }
 
             return new SuccessfulData('Create transaction successfully!', ['transaction' => $newTransaction]);
@@ -146,7 +133,7 @@ class TransactionServices extends BaseService
             }
 
             $transactions = $query->orderBy('date', 'desc')->with(['category' =>  function ($query) {
-                return $query->select('id', 'name', 'image');
+                return $query->select('id', 'name', 'image', 'type');
             }])->with(['event' => function ($query) {
                 return $query->select('id', 'name');
             }])->get();
