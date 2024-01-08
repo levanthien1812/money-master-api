@@ -2,16 +2,18 @@
 
 namespace App\Providers;
 
+use App\Http\Services\AuthService;
+use App\Http\Services\CategoryPlanService;
+use App\Http\Services\CategoryServices;
 use App\Http\Services\EventServices;
 use App\Http\Services\GoalAdditionService;
 use App\Http\Services\GoalService;
-use App\Services\AuthService;
-use App\Services\CategoryPlanService;
-use App\Services\CategoryServices;
-use App\Services\MonthPlanService;
-use App\Services\TransactionServices;
-use App\Services\UserServices;
-use App\Services\WalletServices;
+use App\Http\Services\MonthPlanService;
+use App\Http\Services\NotificationService;
+use App\Http\Services\TransactionServices;
+use App\Http\Services\UserServices;
+use App\Http\Services\EventService;
+use App\Http\Services\WalletServices;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -30,7 +32,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TransactionServices::class);
         $this->app->bind(GoalService::class);
         $this->app->bind(GoalAdditionService::class);
-        $this->app->bind(EventServices::class);
+        $this->app->bind(EventService::class);
+        $this->app->bind(NotificationService::class);
     }
 
     /**

@@ -129,6 +129,13 @@ class MonthPlanService extends BaseService
         ])->exists();
     }
 
+    public function getByMonthYear(int $userId, int $month, int $year): ?MonthPlan {
+        return $this->model::where('user_id', $userId)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->first();
+    }
+
     public function getYears(User $user, array $inputs): object
     {
         try {
