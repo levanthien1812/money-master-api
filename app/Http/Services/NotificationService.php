@@ -5,6 +5,7 @@ namespace App\Http\Services;
 use App\Events\RemindOverspendCategoryPlan;
 use App\Events\RemindOverspendMonthPlan;
 use App\Events\RemindOverspentCategoryPlan;
+use App\Events\RemindOverspentMonthPlan;
 use App\Http\Helpers\FailedData;
 use App\Http\Helpers\SuccessfulData;
 use App\Models\CategoryPlan;
@@ -13,6 +14,7 @@ use App\Models\User;
 use App\Notifications\OverspendCategoryPlan;
 use App\Notifications\OverspendMonthPlan;
 use App\Notifications\OverspentCategoryPlan;
+use App\Notifications\OverspentMonthPlan;
 use Exception;
 use Illuminate\Notifications\Notification;
 
@@ -116,6 +118,9 @@ class NotificationService extends BaseService
         if ($currentPercent >= 95 && $currentPercent <= 100) {
             $user->notify(new OverspendMonthPlan($user, $monthPlan, $currentAmount));
             event(new RemindOverspendMonthPlan($user, $monthPlan, $currentAmount));
+        } else if ($currentPercent > 100) {
+            $user->notify(new OverspentMonthPlan($user, $monthPlan, $currentAmount));
+            event(new RemindOverspentMonthPlan($user, $monthPlan, $currentAmount));
         }
     }
 }
