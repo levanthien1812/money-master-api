@@ -56,6 +56,10 @@ class CategoryPlanService extends BaseService
 
             $newPlan = $this->model::create($planData);
 
+            if ($newPlan) {
+                app(NotificationService::class)->notifyOverspendCategoryPlan($user, $newPlan);
+            }
+
             return new SuccessfulData('Create category plan successfully!', ['plan' => $newPlan]);
         } catch (Exception $error) {
             return new FailedData('Failed to create category plan!');
@@ -129,9 +133,7 @@ class CategoryPlanService extends BaseService
 
             $updated = $plan->update($planData);
 
-            if (!$updated) {
-                return new FailedData('Something went wrong when update category plan');
-            }
+            app(NotificationService::class)->notifyOverspendCategoryPlan($user, $plan);
 
             return new SuccessfulData('Update plan successfully!');
         } catch (Exception $error) {

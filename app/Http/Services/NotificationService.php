@@ -78,9 +78,12 @@ class NotificationService extends BaseService
         }
     }
 
-    public function notifyOverspendCategoryPlan(User $user, CategoryPlan $categoryPlan, int $month, int $year, int $walletId): void
+    public function notifyOverspendCategoryPlan(User $user, CategoryPlan $categoryPlan): void
     {
         $reportTypes = config('report.reporttypes');
+        $month = $categoryPlan->month;
+        $year = $categoryPlan->year;
+        $walletId = $categoryPlan->walletId;
 
         $report = app(ReportService::class)->get($user, [
             'month' => $month,
@@ -101,10 +104,13 @@ class NotificationService extends BaseService
         }
     }
 
-    public function notifyOverspendMonthPlan(User $user, MonthPlan $monthPlan, int $month, int $year, int $walletId): void
+    public function notifyOverspendMonthPlan(User $user, MonthPlan $monthPlan): void
     {
         $reportTypes = config('report.reporttypes');
         $categoryTypes = config('category.categorytypes');
+        $month = $monthPlan->month;
+        $year = $monthPlan->year;
+        $walletId = $monthPlan->walletId;
 
         $report = app(ReportService::class)->get($user, [
             'year' => $year,
