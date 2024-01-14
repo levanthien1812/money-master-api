@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Wallets;
 
 use App\Http\Requests\RequestRoot;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class CreateWalletRequest extends RequestRoot
 {
@@ -24,8 +26,18 @@ class CreateWalletRequest extends RequestRoot
     {
         return [
             'name' => 'string|required',
-            'image' => 'required|file|mimes:jpeg,png,gif|max:2048',
+            'image' => $this->getValidationRule('image'),
             'default' => 'boolean|required',
         ];
     }
+
+    public function getValidationRule(String $key): string
+    {
+        if (request()->hasFile($key)) {
+            return "required|file|mimes:jpeg,png,gif|max:2048";
+        }
+        return "required|string";
+    }
+
+    
 }

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Wallets;
 
 use App\Http\Requests\RequestRoot;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class UpdateWalletRequest extends RequestRoot
 {
@@ -24,8 +25,16 @@ class UpdateWalletRequest extends RequestRoot
     {
         return [
             'name' => 'string|nullable',
-            'image' => 'nullable|file|mimes:jpeg,png,gif|max:2048',
+            'image' => $this->getValidationRule('image'),
             'default' => 'boolean|nullable',
         ];
+    }
+
+    public function getValidationRule(String $key): string
+    {
+        if (request()->hasFile($key)) {
+            return "nullable|file|mimes:jpeg,png,gif|max:2048";
+        }
+        return "nullable|string";
     }
 }
