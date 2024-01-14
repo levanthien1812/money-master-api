@@ -45,7 +45,7 @@ class RemindOverspendMonthPlan implements ShouldBroadcast
     public function broadcastWith(): array
     {
         $monthName = Carbon::create(null, $this->monthPlan->month, 1)->format('F');
-        $exceeding = $this->currentAmount - $this->monthPlan->amount;
+        $exceeding = $this->monthPlan->amount - $this->currentAmount;
 
         return ([
             'link' => '/plans',

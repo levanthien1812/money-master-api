@@ -76,11 +76,11 @@ class TransactionServices extends BaseService
             $monthPlan = $this->monthPlanService->getByMonthYear($user->id, $month, $year);
 
             if ($categoryPlan) {
-                app(NotificationService::class)->notifyOverspendCategoryPlan($user, $categoryPlan, $month, $year, $data['wallet_id']);
+                app(NotificationService::class)->notifyOverspendCategoryPlan($user, $categoryPlan);
             }
 
             if ($monthPlan) {
-                app(NotificationService::class)->notifyOverspendMonthPlan($user, $monthPlan, $month, $year, $data['wallet_id']);
+                app(NotificationService::class)->notifyOverspendMonthPlan($user, $monthPlan);
             }
 
             return new SuccessfulData('Create transaction successfully!', ['transaction' => $newTransaction]);

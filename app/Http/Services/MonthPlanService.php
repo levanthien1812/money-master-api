@@ -22,7 +22,7 @@ class MonthPlanService extends BaseService
     {
         try {
 
-            if (! $this->walletService->checkExistsById($data['wallet_id'])) {
+            if (!$this->walletService->checkExistsById($data['wallet_id'])) {
                 return new FailedData('Wallet not found!');
             }
 
@@ -33,6 +33,10 @@ class MonthPlanService extends BaseService
             }
 
             $newPlan = $this->model::create($planData);
+
+            if ($newPlan) {
+                app(NotificationService::class)->notifyOverspendMonthPlan($user, $newPlan);
+            }
 
             return new SuccessfulData('Create month plan successfully!', ['plan' => $newPlan]);
         } catch (Exception $error) {
@@ -74,7 +78,7 @@ class MonthPlanService extends BaseService
 
             return new SuccessfulData('Get plans successfully', ['plans' => $plans]);
         } catch (Exception $error) {
-            return new FailedData('Failed to get month plans!', );
+            return new FailedData('Failed to get month plans!',);
         }
     }
 
@@ -82,7 +86,7 @@ class MonthPlanService extends BaseService
     {
         try {
             $plan = $this->getById($id);
-            if (! $plan) {
+            if (!$plan) {
                 return new FailedData('Month plan not found!');
             }
 
@@ -90,9 +94,11 @@ class MonthPlanService extends BaseService
 
             $updated = $plan->update($planData);
 
-            if (! $updated) {
+            if (!$updated) {
                 return new FailedData('Plan is not created!');
             }
+            
+            app(NotificationService::class)->notifyOverspendMonthPlan($user, $plan);
 
             return new SuccessfulData('Update plan successfully!');
         } catch (Exception $error) {
@@ -104,7 +110,7 @@ class MonthPlanService extends BaseService
     {
         try {
             $deleted = $this->model::destroy($id);
-            if (! $deleted) {
+            if (!$deleted) {
                 return new FailedData('Delete fails or plan not found!');
             }
 
@@ -129,7 +135,8 @@ class MonthPlanService extends BaseService
         ])->exists();
     }
 
-    public function getByMonthYear(int $userId, int $month, int $year): ?MonthPlan {
+    public function getByMonthYear(int $userId, int $month, int $year): ?MonthPlan
+    {
         return $this->model::where('user_id', $userId)
             ->where('month', $month)
             ->where('year', $year)
