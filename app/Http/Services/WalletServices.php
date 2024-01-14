@@ -25,7 +25,11 @@ class WalletServices extends BaseService
             }
 
             $image = isset($data['image']) ? $data['image'] : null;
-            $imageUrl = StorageHelper::store($image, '/public/images/wallets');
+            if (is_file($image)) {
+                $imageUrl = StorageHelper::store($image, '/public/images/wallets');
+            } else {
+                $imageUrl = $image;
+            }
 
             $walletData = array_merge($data, ['user_id' => $user->id, 'image' => $imageUrl]);
 
@@ -102,8 +106,11 @@ class WalletServices extends BaseService
                     StorageHelper::delete($imagePath);
                 }
 
-                // STORE AND RETREIVE NEW IMAGE
-                $imageUrl = StorageHelper::store($image, '/public/images/categories');
+                if (is_file($image)) {
+                    $imageUrl = StorageHelper::store($image, '/public/images/wallets');
+                } else {
+                    $imageUrl = $image;
+                }
             }
 
             $data = $image ? array_merge($data, ['image' => $imageUrl]) : $data;
@@ -127,6 +134,11 @@ class WalletServices extends BaseService
 
             if (!$wallet) {
                 return new FailedData('Wallet not found!');
+            }
+
+            if ($wallet->image) {
+                $imagePath = Str::after($wallet->image, '/storage');
+                StorageHelper::delete($imagePath);
             }
 
             if ($wallet) {
