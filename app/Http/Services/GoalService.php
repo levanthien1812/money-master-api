@@ -241,7 +241,7 @@ class GoalService extends BaseService
 
             $statuses = config('goal.goalstatus');
 
-            if (strtoupper($data['status']) === $statuses[1]->value() && Carbon::parse($data['date_begin'])->lt(Carbon::today())) {
+            if ($data['status'] === $statuses['NOT_STARTED'] && Carbon::parse($data['date_begin'])->lt(Carbon::today())) {
                 $message = 'Goal\'s begining date must be from today!';
 
                 return new FailedData($message, ['date_begin' => $message]);

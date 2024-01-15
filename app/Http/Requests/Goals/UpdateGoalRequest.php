@@ -23,7 +23,7 @@ class UpdateGoalRequest extends RequestRoot
     public function rules(): array
     {
         return [
-            'type' => 'nullable|numeric|in:saving,debt-reduction',
+            'type' => 'nullable|numeric',
             'name' => 'nullable|string',
             'description' => 'nullable|string',
             'date_begin' => 'nullable|date',
@@ -31,7 +31,7 @@ class UpdateGoalRequest extends RequestRoot
             'amount' => 'nullable|numeric|min:0',
             'is_important' => 'nullable',
             'image' => 'nullable|file|mimes:jpg,jpeg,png,gif|max:2048',
-            'status' => 'required|string',
+            'status' => 'required|numeric',
         ];
     }
 }
